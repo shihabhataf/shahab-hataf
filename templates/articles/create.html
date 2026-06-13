@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+
+{% block head %}
+
+{{ super() }}
+<script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
+<script>
+tinymce.init({
+  selector: '#contentEditor',
+  language: 'ar',
+  directionality: 'rtl',
+  height: 500,
+  menubar: 'file edit view insert format tools table',
+  plugins: 'advlist autolink lists link image charmap preview anchor searchreplace visualblocks code fullscreen insertdatetime media table help wordcount',
+  toolbar: 'undo redo | bold italic underline strikethrough | fontfamily fontsize | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image media | removeformat | fullscreen',
+  toolbar_mode: 'sliding',
+  image_title: true,
+  automatic_uploads: true,
+  file_picker_types: 'image',
+  images_upload_url: '/articles/upload-image',
+  relative_urls: false,
+  remove_script_host: false,
+  convert_urls: true,
+});
+</script>
+
+{% endblock %}
+{% block title %}كتابة مقال جديد{% endblock %}
+{% block content %}
+<div class="editor-page">
+  <div class="editor-header">
+    <h1>✍ كتابة مقال جديد</h1>
+  </div>
+  <form method="POST" enctype="multipart/form-data" class="editor-form" id="articleForm">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="editor-main">
+      <div class="form-group">
+        <input type="text" name="title" placeholder="عنوان المقال..." class="title-input" value="{{ form.title.data or '' }}" required>
+        {% if form.title.errors %}{% for e in form.title.errors %}<span class="field-error">{{ e }}</span>{% endfor %}{% endif %}
+      </div>
+      <div class="form-group">
+        <textarea name="content" id="contentEditor" class="content-editor" placeholder="اكتب محتوى مقالك هنا..." rows="20">{{ form.content.data or '' }}</textarea>
+        {% if form.content.errors %}{% for e in form.content.errors %}<span class="field-error">{{ e }}</span>{% endfor %}{% endif %}
+      </div>
+      <div class="form-group">
+        <label>ملخص المقال (اختياري)</label>
+        <textarea name="excerpt" class="form-control" rows="3" placeholder="ملخص مختصر يظهر في بطاقة المقال...">{{ form.excerpt.data or '' }}</textarea>
+      </div>
+    </div>
+    <div class="editor-sidebar">
+      <div class="editor-panel">
+        <h3>⚙ إعدادات النشر</h3>
+        <div class="form-group">
+          <label>الحالة</label>
+          <select name="status" class="form-select">
+            <option value="draft">مسودة</option>
+            <option value="published">نشر الآن</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>التصنيف</label>
+          <select name="category_id" class="form-select">
+            <option value="0">بدون تصنيف</option>
+            {% for cat in categories %}
+            <option value="{{ cat.id }}">{{ cat.icon }} {{ cat.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>الوسوم (مفصولة بفاصلة)</label>
+          <input type="text" name="tags" class="form-control" placeholder="مثال: تقنية, ذكاء اصطناعي, مستقبل">
+        </div>
+        <div class="form-group">
+          <label>📷 صورة الغلاف</label>
+          <div class="file-upload-area" id="fileUploadArea">
+            <input type="file" name="cover_image" id="coverImage" accept="image/*" class="file-input">
+            <div class="file-upload-placeholder">
+              <span>❐</span>
+              <p>اسحب صورة هنا أو انقر للاختيار</p>
+              <small>PNG, JPG, WEBP (حد أقصى 16MB)</small>
+            </div>
+            <img id="imagePreview" class="image-preview" style="display:none">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>🎥 رابط يوتيوب (اختياري)</label>
+          <input type="text" name="youtube_url" class="form-control" placeholder="https://www.youtube.com/watch?v=...">
+        </div>
+        <div class="editor-actions">
+          <button type="submit" class="btn btn-primary btn-full">⤊ نشر المقال</button>
+          <a href="{{ url_for('main.index') }}" class="btn btn-ghost btn-full">إلغاء</a>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>
+<script>
+const coverInput = document.getElementById('coverImage');
+const preview = document.getElementById('imagePreview');
+const placeholder = document.querySelector('.file-upload-placeholder');
+coverInput.addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      preview.src = ev.target.result;
+      preview.style.display = 'block';
+      placeholder.style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+  }
+});
+</script>
+{% endblock %}

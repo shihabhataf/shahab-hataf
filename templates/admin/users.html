@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block title %}إدارة المستخدمين{% endblock %}
+{% block content %}
+<div class="admin-page">
+  <div class="admin-header">
+    <h1>☵ إدارة المستخدمين</h1>
+    <div class="admin-nav">
+      <a href="{{ url_for('admin.dashboard') }}" class="admin-nav-link">⌶ نظرة عامة</a>
+      <a href="{{ url_for('admin.articles') }}" class="admin-nav-link">✍ المقالات</a>
+      <a href="{{ url_for('admin.users') }}" class="admin-nav-link active">☵ المستخدمون</a>
+      <a href="{{ url_for('admin.comments') }}" class="admin-nav-link">✆ التعليقات</a>
+      <a href="{{ url_for('admin.categories') }}" class="admin-nav-link">📁 التصنيفات</a>
+      <a href="{{ url_for('admin.tags') }}" class="admin-nav-link"># الوسوم</a>
+    </div>
+  </div>
+  <div class="admin-panel">
+    <table class="admin-table">
+      <thead><tr><th>المستخدم</th><th>البريد</th><th>التسجيل</th><th>مقالات</th><th>المدير</th><th>الحالة</th><th>إجراءات</th></tr></thead>
+      <tbody>
+      {% for u in users.items %}
+      <tr>
+        <td>{{ u.full_name }}</td>
+        <td>{{ u.email }}</td>
+        <td>{{ u.joined_at.strftime('%d/%m/%Y') }}</td>
+        <td>{{ u.articles.count() }}</td>
+        <td>{{ '✓' if u.is_admin else '—' }}</td>
+        <td><span class="status-badge {% if u.is_active %}status-published{% else %}status-draft{% endif %}">{{ 'نشط' if u.is_active else 'موقوف' }}</span></td>
+        <td>
+          {% if u.id != current_user.id %}
+          <form action="{{ url_for('admin.toggle_admin', id=u.id) }}" method="POST" style="display:inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="btn btn-sm btn-secondary">{{ 'إلغاء المدير' if u.is_admin else 'تعيين مديراً' }}</button>
+          </form>
+          <form action="{{ url_for('admin.toggle_active', id=u.id) }}" method="POST" style="display:inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="btn btn-sm {% if u.is_active %}btn-danger{% else %}btn-primary{% endif %}">{{ 'إيقاف' if u.is_active else 'تفعيل' }}</button>
+          </form>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

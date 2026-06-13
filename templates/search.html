@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% block title %}نتائج البحث: {{ q }}{% endblock %}
+{% block content %}
+<div class="search-page">
+  <div class="search-hero">
+    <h1>🔍 نتائج البحث</h1>
+    <form style="witdh :100%; action="{{ url_for('main.search') }}" method="GET" class="search-form-big">
+      <input style="witdh :80%; type="text" name="q" value="{{ q }}" class="search-input-big" placeholder="ابحث في المقالات..." autofocus>
+      <button style="witdh :15%; type="submit" class="btn btn-primary">بحث</button>
+    </form>
+    {% if q %}
+      <p class="search-info">{{ total }} نتيجة لـ "<strong>{{ q }}</strong>"</p>
+    {% endif %}
+    
+    <!-- فلتر التصنيفات -->
+    <div class="search-filters">
+      <span>تصفية حسب التصنيف:</span>
+      <div class="filter-cats">
+        <a href="{{ url_for('main.search', q=q) }}" class="filter-chip {% if not selected_cat %}active{% endif %}">الكل</a>
+        {% for cat in all_categories %}
+          <a href="{{ url_for('main.search', q=q, cat=cat.slug) }}" class="filter-chip {% if selected_cat == cat.slug %}active{% endif %}">{{ cat.icon }} {{ cat.name }}</a>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  
+  {% if results %}
+  <div class="articles-grid">
+    {% for art in results.items %}
+    <article class="article-card">
+      <a href="{{ url_for('articles.detail', slug=art.slug) }}" class="card-img-wrap">
+        <img src="{% if art.cover_image %}{{ url_for('static', filename='uploads/' + art.cover_image) }}{% else %}{{ url_for('static', filename='img/placeholder.svg') }}{% endif %}" alt="{{ art.title }}" class="card-img" loading="lazy">
+        {% if art.category %}<span class="card-cat-badge" style="background:{{ art.category.color }}">{{ art.category.icon }}</span>{% endif %}
+      </a>
+      <div class="card-body">
+        {% if art.category %}
+        <a href="{{ url_for('main.category', slug=art.category.slug) }}" class="card-cat" style="color:{{ art.category.color }}">{{ art.category.name }}</a>
+        {% endif %}
+        <h3 class="card-title"><a href="{{ url_for('articles.detail', slug=art.slug) }}">{{ art.title }}</a></h3>
+        <p class="card-excerpt">{{ art.excerpt[:100] if art.excerpt else '' }}...</p>
+        <div class="card-footer">
+          <div class="card-author">
+            <img src="{{ url_for('static', filename='img/default_avatar.svg') }}" alt="{{ art.author.full_name }}" class="card-author-img">
+            <span>{{ art.author.full_name }}</span>
+          </div>
+          <div class="card-stats">
+            <span>{{ art.reading_time }}د</span>
+            <span>👁{{ art.views }}</span>
+            <span>❤️{{ art.likes_count }}</span>
+          </div>
+        </div>
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+  
+  {% if results.pages > 1 %}
+  <div class="pagination">
+    {% if results.has_prev %}<a href="{{ url_for('main.search', q=q, page=results.prev_num, cat=selected_cat) }}" class="page-btn">‹</a>{% endif %}
+    {% for p in results.iter_pages() %}
+      {% if p %}<a href="{{ url_for('main.search', q=q, page=p, cat=selected_cat) }}" class="page-btn {% if p==results.page %}active{% endif %}">{{ p }}</a>
+      {% else %}<span class="page-dots">…</span>{% endif %}
+    {% endfor %}
+    {% if results.has_next %}<a href="{{ url_for('main.search', q=q, page=results.next_num, cat=selected_cat) }}" class="page-btn">›</a>{% endif %}
+  </div>
+  {% endif %}
+  
+  {% elif q %}
+  <div class="empty-state">
+    <span>😕</span>
+    <p>لا توجد نتائج لـ "{{ q }}"</p>
+    <p>حاول استخدام كلمات مفتاحية أخرى أو تصفح التصنيفات.</p>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <span>🔍</span>
+    <p>ابحث عن أي مقال تريده...</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

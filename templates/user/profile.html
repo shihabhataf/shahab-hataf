@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+{% block title %}ملفي الشخصي{% endblock %}
+{% block content %}
+<div class="profile-page">
+  <div class="profile-hero">
+    <img src="{{ url_for('static', filename='img/default_avatar.svg') }}" alt="{{ current_user.full_name }}" class="profile-avatar">
+    <div class="profile-info">
+      <h1>{{ current_user.full_name }}</h1>
+      <p class="profile-username">@{{ current_user.username }}</p>
+      {% if current_user.bio %}<p class="profile-bio">{{ current_user.bio }}</p>{% endif %}
+      <div class="profile-stats">
+        <div class="stat"><strong>{{ articles|length }}</strong><span>مقال</span></div>
+        <div class="stat"><strong>{{ drafts|length }}</strong><span>مسودة</span></div>
+        <div class="stat"><strong>{{ saved|length }}</strong><span>محفوظ</span></div>
+      </div>
+      <a href="{{ url_for('user.settings') }}" class="btn btn-secondary">⚙ تعديل الملف الشخصي</a>
+    </div>
+  </div>
+
+  <div class="profile-tabs">
+    <button class="tab-btn active" data-tab="articles">✍ مقالاتي ({{ articles|length }})</button>
+    <button class="tab-btn" data-tab="drafts">❐ مسوداتي ({{ drafts|length }})</button>
+    <button class="tab-btn" data-tab="saved">🔖 المحفوظات ({{ saved|length }})</button>
+  </div>
+
+  <div class="tab-content active" id="tab-articles">
+    {% if articles %}
+    <div class="articles-list">
+      {% for art in articles %}
+      <div class="list-article-card">
+        {% if art.cover_image %}<img src="{{ url_for('static', filename='uploads/' + art.cover_image) }}" class="list-art-img">{% endif %}
+        <div class="list-art-info">
+          <h3><a href="{{ url_for('articles.detail', slug=art.slug) }}">{{ art.title }}</a></h3>
+          <div class="list-art-meta">
+            <span>⌕ {{ art.views }}</span>
+            <span>♡ {{ art.likes_count }}</span>
+            <span>✆ {{ art.comments_count }}</span>
+            <span>{{ art.published_at.strftime('%d/%m/%Y') if art.published_at else '' }}</span>
+          </div>
+          <div class="list-art-actions">
+            <a href="{{ url_for('articles.edit', id=art.id) }}" class="btn btn-sm btn-secondary">تعديل</a>
+            <form action="{{ url_for('articles.delete', id=art.id) }}" method="POST" style="display:inline">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('حذف؟')">حذف</button>
+            </form>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <span>✍</span>
+      <p>لم تكتب أي مقالات بعد</p>
+      <a href="{{ url_for('articles.create') }}" class="btn btn-primary">ابدأ الكتابة الآن</a>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="tab-content" id="tab-drafts" style="display:none">
+    {% if drafts %}
+    <div class="articles-list">
+      {% for art in drafts %}
+      <div class="list-article-card">
+        <div class="list-art-info">
+          <span class="draft-badge">مسودة</span>
+          <h3>{{ art.title }}</h3>
+          <div class="list-art-actions">
+            <a href="{{ url_for('articles.edit', id=art.id) }}" class="btn btn-sm btn-primary">متابعة التحرير</a>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state"><p>لا توجد مسودات</p></div>
+    {% endif %}
+  </div>
+
+  <div class="tab-content" id="tab-saved" style="display:none">
+    {% if saved %}
+    <div class="articles-list">
+      {% for s in saved %}
+      <div class="list-article-card">
+        {% if s.article.cover_image %}<img src="{{ url_for('static', filename='uploads/' + s.article.cover_image) }}" class="list-art-img">{% endif %}
+        <div class="list-art-info">
+          <h3><a href="{{ url_for('articles.detail', slug=s.article.slug) }}">{{ s.article.title }}</a></h3>
+          <span>حُفظ {{ s.saved_at.strftime('%d/%m/%Y') }}</span>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state"><p>لا توجد مقالات محفوظة</p></div>
+    {% endif %}
+  </div>
+</div>
+<script>
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).style.display = 'block';
+  });
+});
+</script>
+{% endblock %}

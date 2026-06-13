@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block title %}إدارة التعليقات{% endblock %}
+{% block content %}
+<div class="admin-page">
+  <div class="admin-header">
+    <h1>✆ إدارة التعليقات</h1>
+    <div class="admin-nav">
+      <a href="{{ url_for('admin.dashboard') }}" class="admin-nav-link">⌶ نظرة عامة</a>
+      <a href="{{ url_for('admin.articles') }}" class="admin-nav-link">✍ المقالات</a>
+      <a href="{{ url_for('admin.users') }}" class="admin-nav-link">☵ المستخدمون</a>
+      <a href="{{ url_for('admin.comments') }}" class="admin-nav-link active">✆ التعليقات</a>
+      <a href="{{ url_for('admin.categories') }}" class="admin-nav-link">📁 التصنيفات</a>
+    </div>
+  </div>
+  <div class="admin-panel">
+    <table class="admin-table">
+      <thead><tr><th>المستخدم</th><th>التعليق</th><th>المقال</th><th>التاريخ</th><th>الحالة</th><th>إجراءات</th></tr></thead>
+      <tbody>
+      {% for c in comments.items %}
+      <tr>
+        <td>{{ c.author.full_name }}</td>
+        <td>{{ c.content[:60] }}...</td>
+        <td><a href="{{ url_for('articles.detail', slug=c.article.slug) }}">{{ c.article.title[:30] }}...</a></td>
+        <td>{{ c.created_at.strftime('%d/%m/%Y') }}</td>
+        <td><span class="status-badge {% if c.is_approved %}status-published{% else %}status-draft{% endif %}">{{ 'موافق عليه' if c.is_approved else 'مخفي' }}</span></td>
+        <td>
+          <form action="{{ url_for('admin.toggle_comment', id=c.id) }}" method="POST" style="display:inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="btn btn-sm btn-secondary">{{ 'إخفاء' if c.is_approved else 'إظهار' }}</button>
+          </form>
+          <form action="{{ url_for('admin.delete_comment', id=c.id) }}" method="POST" style="display:inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="btn btn-sm btn-danger" onclick="return confirm('حذف؟')">حذف</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

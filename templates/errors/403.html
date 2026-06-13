@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block title %}403 - غير مصرح{% endblock %}
+{% block content %}
+<div class="error-page">
+  <div class="error-content">
+    <div class="error-code">403</div>
+    <div class="error-icon">⌘</div>
+    <h1>غير مصرح بالوصول</h1>
+    <p>ليس لديك صلاحية للوصول إلى هذه الصفحة.</p>
+    <div class="error-actions">
+      <a href="{{ url_for('main.index') }}" class="btn btn-primary">⌂ العودة للرئيسية</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

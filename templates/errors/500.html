@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block title %}500 - خطأ في الخادم{% endblock %}
+{% block content %}
+<div class="error-page">
+  <div class="error-content">
+    <div class="error-code">500</div>
+    <div class="error-icon">⚡</div>
+    <h1>خطأ داخلي في الخادم</h1>
+    <p>حدث خطأ غير متوقع. نعمل على إصلاحه في أقرب وقت ممكن.</p>
+    <div class="error-actions">
+      <a href="{{ url_for('main.index') }}" class="btn btn-primary">⌂ العودة للرئيسية</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

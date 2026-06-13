@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block title %}إدارة المقالات{% endblock %}
+{% block content %}
+<div class="admin-page">
+  <div class="admin-header">
+    <h1>✍ إدارة المقالات</h1>
+    <div class="admin-nav">
+      <a href="{{ url_for('admin.dashboard') }}" class="admin-nav-link">⌶ نظرة عامة</a>
+      <a href="{{ url_for('admin.articles') }}" class="admin-nav-link active">✍ المقالات</a>
+      <a href="{{ url_for('admin.users') }}" class="admin-nav-link">☵ المستخدمون</a>
+      <a href="{{ url_for('admin.comments') }}" class="admin-nav-link">✆ التعليقات</a>
+      <a href="{{ url_for('admin.categories') }}" class="admin-nav-link">📁 التصنيفات</a>
+      <a href="{{ url_for('admin.tags') }}" class="admin-nav-link"># الوسوم</a>
+    </div>
+  </div>
+  <div class="admin-panel">
+    <table class="admin-table">
+      <thead><tr><th>العنوان</th><th>الكاتب</th><th>التصنيف</th><th>الحالة</th><th>مميز</th><th>المشاهدات</th><th>إجراءات</th></tr></thead>
+      <tbody>
+      {% for art in articles.items %}
+      <tr>
+        <td><a href="{{ url_for('articles.detail', slug=art.slug) }}">{{ art.title[:45] }}...</a></td>
+        <td>{{ art.author.full_name }}</td>
+        <td>{{ art.category.name if art.category else '-' }}</td>
+        <td><span class="status-badge status-{{ art.status }}">{{ 'منشور' if art.status=='published' else 'مسودة' }}</span></td>
+        <td>
+          <form action="{{ url_for('admin.toggle_featured', id=art.id) }}" method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="btn btn-sm {% if art.is_featured %}btn-primary{% else %}btn-ghost{% endif %}">{{ '★' if art.is_featured else '☆' }}</button>
+          </form>
+        </td>
+        <td>{{ art.views }}</td>
+        <td>
+          <a href="{{ url_for('articles.edit', id=art.id) }}" class="btn btn-sm btn-secondary">تعديل</a>
+          <form action="{{ url_for('admin.delete_article', id=art.id) }}" method="POST" style="display:inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="btn btn-sm btn-danger" onclick="return confirm('حذف؟')">حذف</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    <div class="pagination">
+      {% if articles.has_prev %}<a href="{{ url_for('admin.articles', page=articles.prev_num) }}" class="page-btn">‹</a>{% endif %}
+      {% for p in articles.iter_pages() %}
+        {% if p %}<a href="{{ url_for('admin.articles', page=p) }}" class="page-btn {% if p==articles.page %}active{% endif %}">{{ p }}</a>{% else %}<span>…</span>{% endif %}
+      {% endfor %}
+      {% if articles.has_next %}<a href="{{ url_for('admin.articles', page=articles.next_num) }}" class="page-btn">›</a>{% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

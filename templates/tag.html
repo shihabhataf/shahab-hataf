@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block title %}وسم: {{ tag.name }}{% endblock %}
+{% block content %}
+<div class="category-page">
+  <div class="category-hero">
+    <h1># {{ tag.name }}</h1>
+    <span class="category-count">{{ articles.total }} مقال</span>
+  </div>
+  <div class="articles-grid">
+    {% for art in articles.items %}
+    <article class="article-card">
+      <a href="{{ url_for('articles.detail', slug=art.slug) }}" class="card-img-wrap">
+        <img src="{% if art.cover_image %}{{ url_for('static', filename='uploads/' + art.cover_image) }}{% else %}{{ url_for('static', filename='img/placeholder.svg') }}{% endif %}" alt="{{ art.title }}" class="card-img" loading="lazy">
+      </a>
+      <div class="card-body">
+        <h3 class="card-title"><a href="{{ url_for('articles.detail', slug=art.slug) }}">{{ art.title }}</a></h3>
+        <div class="card-stats"><span>⌕{{ art.views }}</span></div>
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

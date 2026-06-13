@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block title %}{{ category.name }}{% endblock %}
+{% block content %}
+<div class="category-page">
+  <div class="category-hero" style="border-color:{{ category.color }}">
+    <span class="category-hero-icon">{{ category.icon }}</span>
+    <h1>{{ category.name }}</h1>
+    {% if category.description %}<p>{{ category.description }}</p>{% endif %}
+    <span class="category-count">{{ articles.total }} مقال</span>
+  </div>
+  <div class="articles-grid">
+    {% for art in articles.items %}
+    <article class="article-card">
+      <a href="{{ url_for('articles.detail', slug=art.slug) }}" class="card-img-wrap">
+        <img src="{% if art.cover_image %}{{ url_for('static', filename='uploads/' + art.cover_image) }}{% else %}{{ url_for('static', filename='img/placeholder.svg') }}{% endif %}" alt="{{ art.title }}" class="card-img" loading="lazy">
+      </a>
+      <div class="card-body">
+        <h3 class="card-title"><a href="{{ url_for('articles.detail', slug=art.slug) }}">{{ art.title }}</a></h3>
+        <p class="card-excerpt">{{ art.excerpt[:100] if art.excerpt else '' }}...</p>
+        <div class="card-stats"><span>⌕{{ art.views }}</span><span>♡{{ art.likes_count }}</span></div>
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+  {% if articles.pages > 1 %}
+  <div class="pagination">
+    {% if articles.has_prev %}<a href="{{ url_for('main.category', slug=category.slug, page=articles.prev_num) }}" class="page-btn">‹</a>{% endif %}
+    {% for p in articles.iter_pages() %}
+      {% if p %}<a href="{{ url_for('main.category', slug=category.slug, page=p) }}" class="page-btn {% if p==articles.page %}active{% endif %}">{{ p }}</a>
+      {% else %}<span class="page-dots">…</span>{% endif %}
+    {% endfor %}
+    {% if articles.has_next %}<a href="{{ url_for('main.category', slug=category.slug, page=articles.next_num) }}" class="page-btn">›</a>{% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block title %}إعدادات الحساب{% endblock %}
+{% block content %}
+<div class="settings-page">
+  <h1>⚙ إعدادات الحساب</h1>
+  <form method="POST" enctype="multipart/form-data" class="settings-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="form-group">
+      <label>الاسم الكامل</label>
+      <input type="text" name="full_name" class="form-control" value="{{ current_user.full_name }}" required>
+    </div>
+    <div class="form-group">
+      <label>نبذة تعريفية</label>
+      <textarea name="bio" class="form-control" rows="4" placeholder="أخبرنا عن نفسك...">{{ current_user.bio or '' }}</textarea>
+    </div>
+    <div class="form-group">
+      <label>صورة الملف الشخصي</label>
+      <input type="file" name="avatar" class="form-control" accept="image/*">
+    </div>
+    <hr>
+    <h3>⌘ تغيير كلمة المرور</h3>
+    <div class="form-group">
+      <label>كلمة المرور الحالية</label>
+      <input type="password" name="current_password" class="form-control">
+    </div>
+    <div class="form-group">
+      <label>كلمة المرور الجديدة</label>
+      <input type="password" name="new_password" class="form-control">
+    </div>
+    <button type="submit" class="btn btn-primary">⌘ حفظ التغييرات</button>
+  </form>
+</div>
+{% endblock %}

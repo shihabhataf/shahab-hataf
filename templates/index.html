@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+{% block title %}الرئيسية{% endblock %}
+
+{% block content %}
+{% if featured %}
+<section class="hero-slider" id="heroSlider">
+  <div class="slider-track" id="sliderTrack">
+    {% for art in featured %}
+    <div class="slide">
+      <div class="slide-bg" style="background-image: url('{% if art.cover_image %}{{ url_for('static', filename='uploads/' + art.cover_image) }}{% else %}{{ url_for('static', filename='img/placeholder.svg') }}{% endif %}')"></div>
+      <div class="slide-overlay"></div>
+      <div class="slide-content">
+        {% if art.category %}
+        <a href="{{ url_for('main.category', slug=art.category.slug) }}" class="slide-cat" style="background:{{ art.category.color }}">{{ art.category.icon }} {{ art.category.name }}</a>
+        {% endif %}
+        <h2 class="slide-title"><a href="{{ url_for('articles.detail', slug=art.slug) }}">{{ art.title }}</a></h2>
+        <p class="slide-excerpt">{{ art.excerpt[:120] }}...</p>
+        <div class="slide-meta">
+          <span>{{ art.author.full_name }}</span>
+          <span>•</span>
+          <span>{{ art.reading_time }} دقيقة قراءة</span>
+          <span>•</span>
+          <span>⌕ {{ art.views }}</span>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  <button class="slider-btn slider-prev" id="sliderPrev">‹</button>
+  <button class="slider-btn slider-next" id="sliderNext">›</button>
+  <div class="slider-dots" id="sliderDots">
+    {% for art in featured %}<button class="dot {% if loop.first %}active{% endif %}" data-index="{{ loop.index0 }}"></button>{% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<div class="home-container">
+  <section class="section">
+    <div class="section-header">
+      <h2 class="section-title">⚡ أحدث المقالات</h2>
+      <a href="{{ url_for('main.search', q='') }}" class="section-more">عرض الكل</a>
+    </div>
+    <div class="articles-grid">
+      {% for art in latest %}
+      <article class="article-card">
+        <a href="{{ url_for('articles.detail', slug=art.slug) }}" class="card-img-wrap">
+          <img src="{% if art.cover_image %}{{ url_for('static', filename='uploads/' + art.cover_image) }}{% else %}{{ url_for('static', filename='img/placeholder.svg') }}{% endif %}" alt="{{ art.title }}" class="card-img" loading="lazy">
+          {% if art.category %}<span class="card-cat-badge" style="background:{{ art.category.color }}">{{ art.category.icon }}</span>{% endif %}
+        </a>
+        <div class="card-body">
+          {% if art.category %}
+          <a href="{{ url_for('main.category', slug=art.category.slug) }}" class="card-cat" style="color:{{ art.category.color }}">{{ art.category.name }}</a>
+          {% endif %}
+          <h3 class="card-title"><a href="{{ url_for('articles.detail', slug=art.slug) }}">{{ art.title }}</a></h3>
+          <p class="card-excerpt">{{ art.excerpt[:100] if art.excerpt else '' }}...</p>
+          <div class="card-footer">
+            <div class="card-author">
+              <img src="{{ url_for('static', filename='img/default_avatar.svg') }}" alt="{{ art.author.full_name }}" class="card-author-img">
+              <span>{{ art.author.full_name }}</span>
+            </div>
+            <div class="card-stats">
+              <span>{{ art.reading_time }}د</span>
+              <span>⌕{{ art.views }}</span>
+              <span>♡{{ art.likes_count }}</span>
+            </div>
+          </div>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+  </section>
+
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <h3 class="sidebar-title">⚡ الأكثر قراءة</h3>
+      {% for art in popular %}
+      <div class="popular-item">
+        <span class="popular-num">{{ loop.index }}</span>
+        <div class="popular-info">
+          <a href="{{ url_for('articles.detail', slug=art.slug) }}" class="popular-title">{{ art.title }}</a>
+          <span class="popular-views">⌕ {{ art.views }}</span>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="sidebar-section">
+      <h3 class="sidebar-title">📁 التصنيفات</h3>
+      <div class="cats-grid">
+        {% for cat in categories %}
+        <a href="{{ url_for('main.category', slug=cat.slug) }}" class="cat-card" style="--cat-color: {{ cat.color }}">
+          <span class="cat-icon">{{ cat.icon }}</span>
+          <span class="cat-name">{{ cat.name }}</span>
+          <span class="cat-count">{{ cat.articles.filter_by(status='published').count() }}</span>
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+  </aside>
+</div>
+{% endblock %}

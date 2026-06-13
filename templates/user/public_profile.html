@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block title %}{{ profile_user.full_name }}{% endblock %}
+{% block content %}
+<div class="profile-page">
+  <div class="profile-hero">
+    <img src="{{ url_for('static', filename='img/default_avatar.svg') }}" alt="{{ profile_user.full_name }}" class="profile-avatar">
+    <div class="profile-info">
+      <h1>{{ profile_user.full_name }}</h1>
+      <p class="profile-username">@{{ profile_user.username }}</p>
+      {% if profile_user.bio %}<p class="profile-bio">{{ profile_user.bio }}</p>{% endif %}
+      <div class="profile-stats">
+        <div class="stat"><strong>{{ articles|length }}</strong><span>مقال</span></div>
+      </div>
+    </div>
+  </div>
+  <h2>✍ مقالات {{ profile_user.full_name }}</h2>
+  <div class="articles-grid">
+    {% for art in articles %}
+    <article class="article-card">
+      <a href="{{ url_for('articles.detail', slug=art.slug) }}" class="card-img-wrap">
+        <img src="{% if art.cover_image %}{{ url_for('static', filename='uploads/' + art.cover_image) }}{% else %}{{ url_for('static', filename='img/placeholder.svg') }}{% endif %}" alt="{{ art.title }}" class="card-img">
+      </a>
+      <div class="card-body">
+        <h3 class="card-title"><a href="{{ url_for('articles.detail', slug=art.slug) }}">{{ art.title }}</a></h3>
+        <div class="card-stats"><span>⌕{{ art.views }}</span><span>♡{{ art.likes_count }}</span></div>
+      </div>
+    </article>
+    {% else %}
+    <p>لم ينشر هذا المستخدم أي مقالات بعد.</p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

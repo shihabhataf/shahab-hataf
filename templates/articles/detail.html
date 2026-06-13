@@ -1,0 +1,168 @@
+{% extends 'base.html' %}
+{% block title %}{{ article.title }}{% endblock %}
+{% block meta_desc %}{{ article.excerpt[:160] if article.excerpt else '' }}{% endblock %}
+{% block og_title %}{{ article.title }}{% endblock %}
+{% block og_desc %}{{ article.excerpt[:200] if article.excerpt else '' }}{% endblock %}
+
+{% block content %}
+<article class="article-page">
+  <div class="article-hero">
+    {% if article.cover_image %}
+    <img src="{{ url_for('static', filename='uploads/' + article.cover_image) }}" alt="{{ article.title }}" class="article-hero-img">
+    {% else %}
+    <div class="article-hero-placeholder"></div>
+    {% endif %}
+  </div>
+  <div class="article-layout">
+    <div class="article-main">
+      <header class="article-header">
+        {% if article.category %}
+        <a href="{{ url_for('main.category', slug=article.category.slug) }}" class="article-cat-badge" style="background:{{ article.category.color }}">{{ article.category.icon }} {{ article.category.name }}</a>
+        {% endif %}
+        <h1 class="article-title">{{ article.title }}</h1>
+        <div class="article-meta">
+          <a href="{{ url_for('user.public_profile', username=article.author.username) }}" class="meta-author">
+            <img src="{{ url_for('static', filename='img/default_avatar.svg') }}" alt="{{ article.author.full_name }}" class="meta-avatar">
+            <span>{{ article.author.full_name }}</span>
+          </a>
+          <span class="meta-sep">•</span>
+          <time>{{ article.published_at.strftime('%d %B %Y') if article.published_at else article.created_at.strftime('%d %B %Y') }}</time>
+          <span class="meta-sep">•</span>
+          <span>☙ {{ article.reading_time }} دقائق قراءة</span>
+          <span class="meta-sep">•</span>
+          <span>⌕ {{ article.views }}</span>
+        </div>
+        <div class="article-actions-bar">
+          <button class="action-btn like-btn {% if user_liked %}liked{% endif %}" data-id="{{ article.id }}" id="likeBtn">
+            <span class="like-icon">♡</span>
+            <span class="like-count" id="likeCount">{{ article.likes_count }}</span>
+          </button>
+          <button class="action-btn save-btn {% if user_saved %}saved{% endif %}" data-id="{{ article.id }}" id="saveBtn">
+            <span>{% if user_saved %}🔖{% else %}⌖{% endif %}</span>
+            <span>{% if user_saved %}محفوظ{% else %}حفظ{% endif %}</span>
+          </button>
+          <div class="share-btns">
+            <span class="share-label">مشاركة:</span>
+            <a href="https://twitter.com/intent/tweet?text={{ article.title | urlencode }}&url={{ request.url | urlencode }}" target="_blank" class="share-btn share-x">𝕏</a>
+            <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.url | urlencode }}" target="_blank" class="share-btn share-fb">f</a>
+            <a href="https://wa.me/?text={{ (article.title + ' ' + request.url) | urlencode }}" target="_blank" class="share-btn share-wa">☎</a>
+            <button class="share-btn share-copy" onclick="copyLink()">⚡</button>
+          </div>
+        </div>
+      </header>
+
+      <div class="article-body" id="articleBody">{{ article.content | safe }}</div>
+
+      {% if article.get_youtube_embed() %}
+      <div class="youtube-embed">
+        <iframe src="{{ article.get_youtube_embed() }}" frameborder="0" allowfullscreen loading="lazy"></iframe>
+      </div>
+      {% endif %}
+
+      {% if article.tags %}
+      <div class="article-tags">
+        <span>#</span>
+        {% for tag in article.tags %}
+        <a href="{{ url_for('main.tag', slug=tag.slug) }}" class="tag-pill">{{ tag.name }}</a>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      {% if current_user.is_authenticated and (current_user.id == article.author_id or current_user.is_admin) %}
+      <div class="article-edit-bar">
+        <a href="{{ url_for('articles.edit', id=article.id) }}" class="btn btn-secondary">✍ تعديل المقال</a>
+        <form action="{{ url_for('articles.delete', id=article.id) }}" method="POST" onsubmit="return confirm('هل أنت متأكد من حذف المقال؟')">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="btn btn-danger">⌧ حذف</button>
+        </form>
+      </div>
+      {% endif %}
+
+      <section class="comments-section">
+        <h3 class="comments-title">✆ التعليقات ({{ comments|length }})</h3>
+        {% if current_user.is_authenticated %}
+        <form action="{{ url_for('articles.comment', id=article.id) }}" method="POST" class="comment-form">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <textarea name="content" placeholder="أضف تعليقك..." class="comment-input" rows="4" required></textarea>
+          <button type="submit" class="btn btn-primary">نشر التعليق</button>
+        </form>
+        {% else %}
+        <div class="comment-login-prompt">
+          <a href="{{ url_for('auth.login') }}" class="btn btn-primary">سجّل الدخول للتعليق</a>
+        </div>
+        {% endif %}
+        <div class="comments-list">
+          {% for c in comments %}
+          <div class="comment-item">
+            <img src="{{ url_for('static', filename='img/default_avatar.svg') }}" alt="{{ c.author.full_name }}" class="comment-avatar">
+            <div class="comment-content">
+              <div class="comment-header">
+                <strong>{{ c.author.full_name }}</strong>
+                <time>{{ c.created_at.strftime('%d/%m/%Y') }}</time>
+              </div>
+              <p>{{ c.content }}</p>
+            </div>
+          </div>
+          {% else %}
+          <p class="no-comments">لا توجد تعليقات بعد. كن أول من يعلق!</p>
+          {% endfor %}
+        </div>
+      </section>
+    </div>
+
+    <aside class="article-sidebar">
+      <div class="author-card">
+        <img src="{{ url_for('static', filename='img/default_avatar.svg') }}" alt="{{ article.author.full_name }}" class="author-card-img">
+        <h4>{{ article.author.full_name }}</h4>
+        {% if article.author.bio %}<p>{{ article.author.bio }}</p>{% endif %}
+        <a href="{{ url_for('user.public_profile', username=article.author.username) }}" class="btn btn-secondary btn-sm">عرض الملف الشخصي</a>
+      </div>
+      {% if related %}
+      <div class="related-section">
+        <h4>☙ مقالات ذات صلة</h4>
+        {% for r in related %}
+        <a href="{{ url_for('articles.detail', slug=r.slug) }}" class="related-item">
+          <img src="{% if r.cover_image %}{{ url_for('static', filename='uploads/' + r.cover_image) }}{% else %}{{ url_for('static', filename='img/placeholder.svg') }}{% endif %}" alt="{{ r.title }}" class="related-img">
+          <div>
+            <p class="related-title">{{ r.title[:60] }}...</p>
+            <span class="related-meta">{{ r.reading_time }}د قراءة</span>
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </aside>
+  </div>
+</article>
+
+<script>
+const articleId = {{ article.id }};
+const likeBtn = document.getElementById('likeBtn');
+const saveBtn = document.getElementById('saveBtn');
+
+{% if current_user.is_authenticated %}
+likeBtn.addEventListener('click', async () => {
+  const res = await fetch(`/articles/${articleId}/like`, {method: 'POST'});
+  const data = await res.json();
+  document.getElementById('likeCount').textContent = data.count;
+  likeBtn.classList.toggle('liked', data.liked);
+});
+
+saveBtn.addEventListener('click', async () => {
+  const res = await fetch(`/articles/${articleId}/save`, {method: 'POST'});
+  const data = await res.json();
+  saveBtn.classList.toggle('saved', data.saved);
+  saveBtn.querySelector('span:last-child').textContent = data.saved ? 'محفوظ' : 'حفظ';
+  saveBtn.querySelector('span:first-child').textContent = data.saved ? '🔖' : '⌖';
+});
+{% else %}
+likeBtn.addEventListener('click', () => window.location.href = '{{ url_for("auth.login") }}');
+saveBtn.addEventListener('click', () => window.location.href = '{{ url_for("auth.login") }}');
+{% endif %}
+
+function copyLink() {
+  navigator.clipboard.writeText(window.location.href);
+  alert('تم نسخ الرابط!');
+}
+</script>
+{% endblock %}

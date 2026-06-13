@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+{% block head %}
+
+{{ super() }}
+<script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
+<script>
+tinymce.init({
+  selector: '#contentEditor',
+  language: 'ar',
+  directionality: 'rtl',
+  height: 500,
+  menubar: 'file edit view insert format tools table',
+  plugins: 'advlist autolink lists link image charmap preview anchor searchreplace visualblocks code fullscreen insertdatetime media table help wordcount',
+  toolbar: 'undo redo | bold italic underline strikethrough | fontfamily fontsize | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image media | removeformat | fullscreen',
+  toolbar_mode: 'sliding',
+  image_title: true,
+  automatic_uploads: true,
+  file_picker_types: 'image',
+  images_upload_url: '/articles/upload-image',
+  relative_urls: false,
+  remove_script_host: false,
+  convert_urls: true,
+});
+</script>
+
+{% endblock %}
+{% block title %}تعديل: {{ article.title }}{% endblock %}
+{% block content %}
+<div class="editor-page">
+  <div class="editor-header">
+    <h1>✍ تعديل المقال</h1>
+  </div>
+  <form method="POST" enctype="multipart/form-data" class="editor-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="editor-main">
+      <div class="form-group">
+        <input type="text" name="title" placeholder="عنوان المقال..." class="title-input" value="{{ article.title }}" required>
+      </div>
+      <div class="form-group">
+        <textarea name="content" id="contentEditor" class="content-editor" rows="20">{{ article.content }}</textarea>
+      </div>
+      <div class="form-group">
+        <label>الملخص</label>
+        <textarea name="excerpt" class="form-control" rows="3">{{ article.excerpt or '' }}</textarea>
+      </div>
+    </div>
+    <div class="editor-sidebar">
+      <div class="editor-panel">
+        <h3>⚙ الإعدادات</h3>
+        <div class="form-group">
+          <label>الحالة</label>
+          <select name="status" class="form-select">
+            <option value="draft" {% if article.status=='draft' %}selected{% endif %}>مسودة</option>
+            <option value="published" {% if article.status=='published' %}selected{% endif %}>منشور</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>التصنيف</label>
+          <select name="category_id" class="form-select">
+            <option value="0">بدون تصنيف</option>
+            {% for cat in categories %}
+            <option value="{{ cat.id }}" {% if article.category_id == cat.id %}selected{% endif %}>{{ cat.icon }} {{ cat.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>الوسوم</label>
+          <input type="text" name="tags" class="form-control" value="{{ form.tags.data or '' }}">
+        </div>
+        <div class="form-group">
+          <label>📷 صورة الغلاف الحالية</label>
+          {% if article.cover_image %}
+          <img src="{{ url_for('static', filename='uploads/' + article.cover_image) }}" class="current-cover-preview">
+          {% endif %}
+          <input type="file" name="cover_image" accept="image/*" class="form-control" style="margin-top:.5rem">
+        </div>
+        <div class="form-group">
+          <label>🎥 رابط يوتيوب</label>
+          <input type="text" name="youtube_url" class="form-control" value="{{ article.youtube_url or '' }}">
+        </div>
+        <div class="editor-actions">
+          <button type="submit" class="btn btn-primary btn-full">⌘ حفظ التغييرات</button>
+          <a href="{{ url_for('articles.detail', slug=article.slug) }}" class="btn btn-ghost btn-full">إلغاء</a>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>
+{% endblock %}

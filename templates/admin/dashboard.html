@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% block title %}لوحة التحكم{% endblock %}
+{% block content %}
+<div class="admin-page">
+  <div class="admin-header">
+    <h1>⛨ لوحة التحكم</h1>
+    <div class="admin-nav">
+      <a href="{{ url_for('admin.dashboard') }}" class="admin-nav-link active">⌶ نظرة عامة</a>
+      <a href="{{ url_for('admin.articles') }}" class="admin-nav-link">✍ المقالات</a>
+      <a href="{{ url_for('admin.users') }}" class="admin-nav-link">☵ المستخدمون</a>
+      <a href="{{ url_for('admin.comments') }}" class="admin-nav-link">✆ التعليقات</a>
+      <a href="{{ url_for('admin.categories') }}" class="admin-nav-link">📁 التصنيفات</a>
+      <a href="{{ url_for('admin.tags') }}" class="admin-nav-link"># الوسوم</a>
+    </div>
+  </div>
+  <div class="stats-grid">
+    <div class="stat-card stat-blue"><div class="stat-icon">✍</div><div class="stat-info"><h3>{{ stats.articles }}</h3><p>مقالات منشورة</p></div></div>
+    <div class="stat-card stat-yellow"><div class="stat-icon">❐</div><div class="stat-info"><h3>{{ stats.drafts }}</h3><p>مسودات</p></div></div>
+    <div class="stat-card stat-green"><div class="stat-icon">☵</div><div class="stat-info"><h3>{{ stats.users }}</h3><p>مستخدمون</p></div></div>
+    <div class="stat-card stat-purple"><div class="stat-icon">✆</div><div class="stat-info"><h3>{{ stats.comments }}</h3><p>تعليقات</p></div></div>
+    <div class="stat-card stat-red"><div class="stat-icon">⌕</div><div class="stat-info"><h3>{{ "{:,}".format(stats.total_views) }}</h3><p>إجمالي المشاهدات</p></div></div>
+    <div class="stat-card stat-pink"><div class="stat-icon">♡</div><div class="stat-info"><h3>{{ stats.total_likes }}</h3><p>إعجابات</p></div></div>
+    <div class="stat-card stat-teal"><div class="stat-icon">🔖</div><div class="stat-info"><h3>{{ stats.saved }}</h3><p>مقالات محفوظة</p></div></div>
+    <div class="stat-card stat-orange"><div class="stat-icon">📁</div><div class="stat-info"><h3>{{ stats.categories }}</h3><p>تصنيفات</p></div></div>
+  </div>
+  <div class="admin-two-col">
+    <div class="admin-panel">
+      <h2>✍ أحدث المقالات</h2>
+      <table class="admin-table">
+        <thead><tr><th>العنوان</th><th>الكاتب</th><th>الحالة</th><th>المشاهدات</th><th>إجراءات</th></tr></thead>
+        <tbody>
+        {% for art in latest_articles %}
+        <tr>
+          <td><a href="{{ url_for('articles.detail', slug=art.slug) }}">{{ art.title[:50] }}...</a></td>
+          <td>{{ art.author.full_name }}</td>
+          <td><span class="status-badge status-{{ art.status }}">{{ 'منشور' if art.status=='published' else 'مسودة' }}</span></td>
+          <td>{{ art.views }}</td>
+          <td>
+            <a href="{{ url_for('articles.edit', id=art.id) }}" class="btn btn-sm btn-secondary">تعديل</a>
+            <form action="{{ url_for('admin.delete_article', id=art.id) }}" method="POST" style="display:inline">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button class="btn btn-sm btn-danger" onclick="return confirm('حذف؟')">حذف</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="admin-panel">
+      <h2>☵ أحدث المستخدمين</h2>
+      {% for u in latest_users %}
+      <div class="user-list-item">
+        <img src="{{ url_for('static', filename='img/default_avatar.svg') }}" class="user-list-avatar">
+        <div>
+          <strong>{{ u.full_name }}</strong>
+          <p>{{ u.email }}</p>
+          <span>{{ u.joined_at.strftime('%d/%m/%Y') }}</span>
+        </div>
+        {% if u.is_admin %}<span class="admin-badge">مدير</span>{% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

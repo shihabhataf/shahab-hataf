@@ -1,0 +1,28 @@
+# بيئة بايثون
+__pycache__/
+*.py[cod]
+*.so
+.Python
+env/
+venv/
+.venv/
+
+# قاعدة البيانات (محلية)
+*.db
+*.sqlite
+*.sqlite3
+
+# ملفات البيئة
+.env
+.env.local
+.env.production
+
+# مجلدات التخزين المؤقتة
+static/uploads/
+instance/
+
+# ملفات التطوير
+.DS_Store
+*.log
+.pytest_cache/
+.mypy_cache/

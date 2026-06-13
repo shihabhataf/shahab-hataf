@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block title %}404 - الصفحة غير موجودة{% endblock %}
+{% block content %}
+<div class="error-page">
+  <div class="error-content">
+    <div class="error-code">404</div>
+    <div class="error-icon">🌌</div>
+    <h1>الصفحة غير موجودة</h1>
+    <p>يبدو أن هذه الصفحة ضاعت في الفضاء... لا تقلق، الشهاب سيرشدك!</p>
+    <div class="error-actions">
+      <a href="{{ url_for('main.index') }}" class="btn btn-primary">⌂ العودة للرئيسية</a>
+      <a href="javascript:history.back()" class="btn btn-secondary">⤇ الصفحة السابقة</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

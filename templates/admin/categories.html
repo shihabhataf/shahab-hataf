@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block title %}إدارة التصنيفات{% endblock %}
+{% block content %}
+<div class="admin-page">
+  <div class="admin-header">
+    <h1>📁 إدارة التصنيفات</h1>
+    <div class="admin-nav">
+      <a href="{{ url_for('admin.dashboard') }}" class="admin-nav-link">⌶ نظرة عامة</a>
+      <a href="{{ url_for('admin.articles') }}" class="admin-nav-link">✍ المقالات</a>
+      <a href="{{ url_for('admin.users') }}" class="admin-nav-link">☵ المستخدمون</a>
+      <a href="{{ url_for('admin.comments') }}" class="admin-nav-link">✆ التعليقات</a>
+      <a href="{{ url_for('admin.categories') }}" class="admin-nav-link active">📁 التصنيفات</a>
+      <a href="{{ url_for('admin.tags') }}" class="admin-nav-link"># الوسوم</a>
+    </div>
+  </div>
+  <div class="admin-two-col">
+    <div class="admin-panel">
+      <h2>إضافة تصنيف جديد</h2>
+      <form method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="form-group"><label>الاسم</label><input type="text" name="name" class="form-control" required></div>
+        <div class="form-group"><label>الوصف</label><textarea name="description" class="form-control" rows="3"></textarea></div>
+        <div class="form-group"><label>اللون</label><input type="color" name="color" class="form-control" value="#6366f1"></div>
+        <div class="form-group"><label>الأيقونة (إيموجي)</label><input type="text" name="icon" class="form-control" placeholder="📰"></div>
+        <button type="submit" class="btn btn-primary">إضافة التصنيف</button>
+      </form>
+    </div>
+    <div class="admin-panel">
+      <h2>التصنيفات الحالية</h2>
+      <table class="admin-table">
+        <thead><tr><th>الأيقونة</th><th>الاسم</th><th>اللون</th><th>المقالات</th><th>إجراءات</th></tr></thead>
+        <tbody>
+        {% for cat in categories %}
+        <tr>
+          <td>{{ cat.icon }}</td>
+          <td>{{ cat.name }}</td>
+          <td><span style="background:{{ cat.color }};padding:2px 8px;border-radius:4px;color:#fff">{{ cat.color }}</span></td>
+          <td>{{ cat.articles.count() }}</td>
+          <td>
+            <form action="{{ url_for('admin.delete_category', id=cat.id) }}" method="POST" style="display:inline">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button class="btn btn-sm btn-danger" onclick="return confirm('حذف؟')">حذف</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

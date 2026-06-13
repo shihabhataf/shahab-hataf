@@ -1,5 +1,4 @@
 import os
-
 class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY', 'shahab-hataf-secret-2026-very-secure')
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL', 'sqlite:///shahab_hataf.db')
